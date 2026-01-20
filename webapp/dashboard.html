@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .actions {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .product-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .product-list h2 {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            font-weight: 600;
+            color: #333;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-edit, .btn-delete {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛍️ Seller Dashboard</h1>
+        <div class="user-info">
+            <span id="username">Loading...</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Products</h3>
+                <div class="value" id="totalProducts">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>In Stock</h3>
+                <div class="value" id="inStock">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Low Stock</h3>
+                <div class="value" id="lowStock">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>With Discounts</h3>
+                <div class="value" id="withDiscounts">0</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn-primary" onclick="openAddModal()">+ Add New Product</button>
+        </div>
+
+        <!-- Product List -->
+        <div class="product-list">
+            <h2>Your Products</h2>
+            <div id="tableContainer">
+                <table id="productTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Discount</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                        <!-- Products will be inserted here -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM9 2v5M15 2v5" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <h3>No products yet</h3>
+                    <p>Start by adding your first product</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Product</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label for="name">Product Name*</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category*</label>
+                    <input type="text" id="category" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price ($)*</label>
+                    <input type="number" id="price" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="discount">Discount (%)</label>
+                    <input type="number" id="discount" min="0" max="100" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="stock">Stock Quantity*</label>
+                    <input type="number" id="stock" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Save Product</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = '/ecommerce-seller';
+
+        let products = [];
+        let currentUser = null;
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${BASE_URL}/api/auth`, {
+                    credentials: 'include'
+                });
+
+                if (!res.ok) {
+                    location.replace('index.html');
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (!data.authenticated) {
+                    location.replace('index.html');
+                    return;
+                }
+
+                document.getElementById('username').textContent = data.username;
+                loadProducts();
+
+            } catch {
+                location.replace('index.html');
+            }
+        }
+
+        // Load products
+        async function loadProducts() {
+            try {
+                console.log('Loading products...');
+                const response = await fetch(`${BASE_URL}/api/products/`, {
+                    credentials: 'include'
+                });
+
+                console.log('Load products response:', response.status);
+
+                if (!response.ok) {
+                    console.error('Failed to load products:', response.status);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('Products loaded:', data);
+                products = data;
+                renderProducts();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        // Render products
+        function renderProducts() {
+            const tbody = document.getElementById('productTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const table = document.getElementById('productTable');
+
+            if (products.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td>${p.productId}</td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.category}</td>
+                    <td>$${p.price.toFixed(2)}</td>
+                    <td>${p.discount}%</td>
+                    <td>${p.stock}</td>
+                    <td>
+                        ${p.stock > 10 ? '<span class="badge badge-success">In Stock</span>' : 
+                          p.stock > 0 ? '<span class="badge badge-warning">Low Stock</span>' : 
+                          '<span class="badge badge-danger">Out of Stock</span>'}
+                    </td>
+                    <td class="action-btns">
+                        <button class="btn-edit" onclick="editProduct(${p.productId})">Edit</button>
+                        <button class="btn-delete" onclick="deleteProduct(${p.productId})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('inStock').textContent = products.filter(p => p.stock > 10).length;
+            document.getElementById('lowStock').textContent = products.filter(p => p.stock > 0 && p.stock <= 10).length;
+            document.getElementById('withDiscounts').textContent = products.filter(p => p.discount > 0).length;
+        }
+
+        // Modal functions
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Product';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        // Edit product
+        function editProduct(productId) {
+            const product = products.find(p => p.productId === productId);
+            if (!product) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Product';
+            document.getElementById('productId').value = product.productId;
+            document.getElementById('name').value = product.name;
+            document.getElementById('category').value = product.category;
+            document.getElementById('price').value = product.price;
+            document.getElementById('discount').value = product.discount;
+            document.getElementById('stock').value = product.stock;
+            document.getElementById('description').value = product.description || '';
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        // Delete product
+        async function deleteProduct(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+
+            try {
+                console.log('Deleting product:', productId);
+                const response = await fetch(`${BASE_URL}/api/products/${productId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                console.log('Delete response:', response.status);
+
+                if (response.ok) {
+                    alert('Product deleted successfully');
+                    loadProducts();
+                } else {
+                    const data = await response.json();
+                    alert('Failed to delete product: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                alert('Error deleting product: ' + error.message);
+            }
+        }
+
+        // Submit form - FIXED VERSION
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productId = document.getElementById('productId').value;
+            const productData = {
+                name: document.getElementById('name').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                discount: parseFloat(document.getElementById('discount').value) || 0,
+                stock: parseInt(document.getElementById('stock').value),
+                description: document.getElementById('description').value
+            };
+
+            console.log('Saving product:', productData);
+            console.log('Product ID:', productId);
+
+            try {
+                let response;
+                if (productId) {
+                    // Update
+                    console.log('Updating product...');
+                    response = await fetch(`${BASE_URL}/api/products/${productId}`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData)
+                    });
+                } else {
+                    // Create
+                    console.log('Creating new product...');
+                    response = await fetch(`${BASE_URL}/api/products/`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData)
+                    });
+                }
+
+                console.log('Response status:', response.status);
+                const responseData = await response.json();
+                console.log('Response data:', responseData);
+
+                if (response.ok) {
+                    alert(productId ? 'Product updated successfully' : 'Product added successfully');
+                    closeModal();
+                    loadProducts();
+                } else {
+                    alert('Failed to save product: ' + (responseData.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving product:', error);
+                alert('Error saving product: ' + error.message);
+            }
+        });
+
+        // Logout
+        async function logout() {
+            await fetch(`${BASE_URL}/api/auth/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            location.href = 'index.html';
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+</body>
+</html>

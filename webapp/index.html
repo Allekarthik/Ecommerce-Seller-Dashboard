@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Login - E-Commerce Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 32px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+        }
+
+        .error-message {
+            display: none;
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            display: none;
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .toggle-form a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-container">
+    <div class="logo">
+        <h1>🛍️ SellerHub</h1>
+        <p>Manage Your Products with Ease</p>
+    </div>
+
+    <!-- DEBUG INFO -->
+    <div class="debug-info" id="debugInfo">
+        Testing connection...
+    </div>
+
+    <div id="errorMsg" class="error-message"></div>
+    <div id="successMsg" class="success-message"></div>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" required>
+        </div>
+
+        <button class="btn" type="submit">Login</button>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form id="registerForm" style="display:none">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="regUsername" required>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="regEmail" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="regPassword" required minlength="6">
+        </div>
+
+        <button class="btn" type="submit">Register</button>
+    </form>
+
+    <div class="toggle-form">
+        <span id="toggleText">
+            Don't have an account?
+            <a href="#" id="toggleLink">Register here</a>
+        </span>
+    </div>
+</div>
+
+<script>
+    const BASE_URL = '/ecommerce-seller';
+    
+    console.log('Base URL:', BASE_URL);
+    console.log('Login URL will be:', `${BASE_URL}/api/auth/login`);
+
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const toggleLink = document.getElementById('toggleLink');
+    const toggleText = document.getElementById('toggleText');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const debugInfo = document.getElementById('debugInfo');
+
+    let isLogin = true;
+    let authCheckComplete = false;
+
+    // Test connection on page load
+    async function testConnection() {
+        try {
+            const testUrl = `${BASE_URL}/api/auth`;
+            debugInfo.textContent = `Testing: ${testUrl}`;
+            console.log('Testing connection to:', testUrl);
+            
+            const response = await fetch(testUrl, {
+                credentials: 'include'
+            });
+            
+            console.log('Test response status:', response.status);
+            
+            if (response.ok) {
+                debugInfo.textContent = `✅ Connection OK! Status: ${response.status}`;
+                debugInfo.style.background = '#efe';
+                debugInfo.style.color = '#3c3';
+            } else {
+                debugInfo.textContent = `⚠️ Response: ${response.status}`;
+                debugInfo.style.background = '#ffe';
+            }
+        } catch (error) {
+            debugInfo.textContent = `❌ Connection FAILED: ${error.message}`;
+            debugInfo.style.background = '#fee';
+            debugInfo.style.color = '#c33';
+            console.error('Connection test failed:', error);
+        }
+    }
+
+    testConnection();
+
+    toggleLink.addEventListener('click', e => {
+        e.preventDefault();
+        isLogin = !isLogin;
+
+        loginForm.style.display = isLogin ? 'block' : 'none';
+        registerForm.style.display = isLogin ? 'none' : 'block';
+
+        toggleText.innerHTML = isLogin
+            ? `Don't have an account? <a href="#" id="toggleLink">Register here</a>`
+            : `Already have an account? <a href="#" id="toggleLink">Login here</a>`;
+
+        document.getElementById('toggleLink').addEventListener('click', arguments.callee);
+        hideMessages();
+    });
+
+    loginForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        hideMessages();
+
+        const loginUrl = `${BASE_URL}/api/auth/login`;
+        console.log('Attempting login to:', loginUrl);
+
+        const credentials = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+        };
+        console.log('Credentials (username only):', credentials.username);
+
+        try {
+            const response = await fetch(loginUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(credentials)
+            });
+
+            console.log('Response status:', response.status);
+            console.log('Response headers:', [...response.headers]);
+
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (response.ok && data.success) {
+                showSuccess('Login successful! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            } else {
+                showError(data.error || 'Invalid credentials');
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            showError(`Network error: ${err.message}. Check console for details.`);
+        }
+    });
+
+    registerForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        hideMessages();
+
+        const registerUrl = `${BASE_URL}/api/auth/register`;
+        console.log('Attempting registration to:', registerUrl);
+
+        try {
+            const response = await fetch(registerUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    username: regUsername.value,
+                    email: regEmail.value,
+                    password: regPassword.value
+                })
+            });
+
+            const data = await response.json();
+            console.log('Registration response:', data);
+
+            if (response.ok && data.success) {
+                showSuccess('Registration successful! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            } else {
+                showError(data.error || 'Registration failed');
+            }
+        } catch (err) {
+            console.error('Registration error:', err);
+            showError(`Network error: ${err.message}`);
+        }
+    });
+
+    // FIXED: Only redirect if we're SURE the user is authenticated
+    async function checkAuth() {
+        // Prevent multiple checks
+        if (authCheckComplete) return;
+        authCheckComplete = true;
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/auth`, {
+                credentials: 'include'
+            });
+
+            if (!res.ok) {
+                console.log('Not authenticated (response not ok)');
+                return;
+            }
+
+            const data = await res.json();
+            console.log('Auth check result:', data);
+
+            // ONLY redirect if authenticated is explicitly true
+            if (data.authenticated === true) {
+                console.log('User is authenticated, redirecting to dashboard...');
+                window.location.href = 'dashboard.html';
+            } else {
+                console.log('User is not authenticated, staying on login page');
+            }
+        } catch (err) {
+            console.log('Auth check failed (normal if not logged in):', err);
+        }
+    }
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+    }
+
+    function showSuccess(msg) {
+        successMsg.textContent = msg;
+        successMsg.style.display = 'block';
+    }
+
+    function hideMessages() {
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+    }
+
+    // Run auth check once
+    checkAuth();
+</script>
+
+</body>
+</html>

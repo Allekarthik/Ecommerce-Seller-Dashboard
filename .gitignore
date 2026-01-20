@@ -1,0 +1,17 @@
+/build/
+/dist/
+/out/
+/target/
+*.class
+*.log
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Tomcat
+/webapps/
+/logs/
+
+# OS
+Thumbs.db

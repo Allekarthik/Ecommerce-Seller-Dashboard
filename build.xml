@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ecommerce-seller" default="build" basedir=".">
+    
+    <!-- Project properties -->
+    <property name="src.dir" value="src"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="webapp.dir" value="webapp"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="war.dir" value="${build.dir}/war"/>
+    <property name="war.file" value="${build.dir}/ecommerce-seller.war"/>
+    
+    <!-- Tomcat location - UPDATE THIS PATH if different -->
+    <property name="tomcat.lib" value="C:/Tomcat9/apache-tomcat-9.0.113/lib"/>
+    
+    <!-- Classpath for compilation -->
+    <path id="classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${tomcat.lib}">
+            <include name="servlet-api.jar"/>
+        </fileset>
+    </path>
+    
+    <!-- Clean target -->
+    <target name="clean" description="Delete old build directories">
+        <delete dir="${build.dir}"/>
+        <echo message="Build directories cleaned"/>
+    </target>
+    
+    <!-- Init target -->
+    <target name="init" depends="clean">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${war.dir}"/>
+        <echo message="Build directories created"/>
+    </target>
+    
+    <!-- Compile target -->
+    <target name="compile" depends="init" description="Compile Java sources">
+        <javac srcdir="${src.dir}" 
+               destdir="${classes.dir}"
+               includeantruntime="false"
+               encoding="UTF-8">
+            <classpath refid="classpath"/>
+        </javac>
+        <echo message="Java sources compiled successfully"/>
+    </target>
+    
+    <!-- Build WAR target -->
+    <target name="build" depends="compile" description="Build WAR file">
+        
+        <!-- Create WEB-INF structure -->
+        <mkdir dir="${war.dir}/WEB-INF"/>
+        <mkdir dir="${war.dir}/WEB-INF/classes"/>
+        <mkdir dir="${war.dir}/WEB-INF/lib"/>
+        
+        <!-- Copy compiled classes -->
+        <copy todir="${war.dir}/WEB-INF/classes">
+            <fileset dir="${classes.dir}"/>
+        </copy>
+        
+        <!-- Copy libraries -->
+        <copy todir="${war.dir}/WEB-INF/lib">
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </copy>
+        
+        <!-- Copy web.xml -->
+        <copy file="${webapp.dir}/WEB-INF/web.xml" 
+              todir="${war.dir}/WEB-INF"/>
+        
+        <!-- Copy HTML and other web files -->
+        <copy todir="${war.dir}">
+            <fileset dir="${webapp.dir}">
+                <include name="**/*.html"/>
+                <include name="**/*.css"/>
+                <include name="**/*.js"/>
+                <include name="**/*.jsp"/>
+                <exclude name="WEB-INF/**"/>
+            </fileset>
+        </copy>
+        
+        <!-- Create WAR file -->
+        <jar destfile="${war.file}" basedir="${war.dir}"/>
+        
+        <echo message=""/>
+        <echo message="========================================"/>
+        <echo message="WAR file created: ${war.file}"/>
+        <echo message="========================================"/>
+        <echo message=""/>
+        <echo message="To deploy:"/>
+        <echo message="1. Stop Tomcat"/>
+        <echo message="2. Delete: C:\Tomcat9\apache-tomcat-9.0.113\webapps\ecommerce-seller"/>
+        <echo message="3. Delete: C:\Tomcat9\apache-tomcat-9.0.113\webapps\ecommerce-seller.war"/>
+        <echo message="4. Copy ${war.file} to C:\Tomcat9\apache-tomcat-9.0.113\webapps\"/>
+        <echo message="5. Start Tomcat"/>
+        <echo message=""/>
+    </target>
+    
+</project>
